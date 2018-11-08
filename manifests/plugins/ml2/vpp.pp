@@ -20,11 +20,23 @@
 # (optional) Password for etcd authentication
 # Defaults to $::os_service_default.
 #
+# [*vhost_user_dir*]
+#   (optional) Folder for vhost user sockets
+#   For containerized deployments, the folder *must* be mounted
+#   in the vpp-agent container
+#   Defaults to '/var/lib/vhost_sockets'
+#
+# [*driver_ext*]
+#   (optional) Comma-separated list of extensions to load for vpp driver
+#   Defaults to $::os_service_default.
+#
 class neutron::plugins::ml2::vpp (
   $etcd_host = $::os_service_default,
   $etcd_port = $::os_service_default,
   $etcd_user = $::os_service_default,
   $etcd_pass = $::os_service_default,
+  $vhost_user_dir = '/var/lib/vhost_sockets',
+  $driver_ext     = $::os_service_default,
 ) {
   include ::neutron::deps
   require ::neutron::plugins::ml2
@@ -34,5 +46,7 @@ class neutron::plugins::ml2::vpp (
     'ml2_vpp/etcd_port': value => $etcd_port;
     'ml2_vpp/etcd_user': value => $etcd_user;
     'ml2_vpp/etcd_pass': value => $etcd_pass, secret => true;
+    'ml2_vpp/vhost_user_dir': value => $vhost_user_dir;
+    'ml2_vpp/driver_extensions': value => $driver_ext;
   }
 }

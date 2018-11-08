@@ -21,6 +21,15 @@
 #   tuples mapping physical network names to agent's node-specific physical
 #   network interfaces. Defaults to $::os_service_default.
 #
+# [*gpe_src_cidr*]
+#   (required for vxlan) The source_IP/Mask used for GPE tunnel packets.
+#
+# [*gpe_locators*]
+#   (required for vxlan) The physnet name(s) used as the underlay
+#   (i.e. locator) interface by GPE. The agent will program the GPE source
+#   CIDR on this interface and will assume that it has Layer3 reachability
+#   with all other compute and network nodes.
+#
 # [*etcd_host*]
 #   (optional) etcd server host name/ip
 #   Defaults to $::os_service_default.
@@ -37,6 +46,10 @@
 #   (optional) Password for etcd authentication
 #   Defaults to $::os_service_default.
 #
+# [*agent_ext*]
+#   (optional) Comma-separated list of extensions to load for vpp agent
+#   Defaults to $::os_service_default.
+#
 # [*purge_config*]
 #   (optional) Whether to set only the specified config options
 #   in the vpp config.
@@ -47,10 +60,13 @@ class neutron::agents::ml2::vpp (
   $enabled        = true,
   $manage_service = true,
   $physnets       = $::os_service_default,
+  $gpe_src_cidr   = $::os_service_default,
+  $gpe_locators   = $::os_service_default,
   $etcd_host      = $::os_service_default,
   $etcd_port      = $::os_service_default,
   $etcd_user      = $::os_service_default,
   $etcd_pass      = $::os_service_default,
+  $agent_ext      = $::os_service_default,
   $purge_config   = false,
 ) {
   include ::neutron::deps
@@ -62,11 +78,14 @@ class neutron::agents::ml2::vpp (
 
   neutron_agent_vpp {
     'ml2_vpp/physnets':  value => $physnets;
+    'ml2_vpp/gpe_src_cidr': value => $gpe_src_cidr;
+    'ml2_vpp/gpe_locators': value => $gpe_locators;
     'ml2_vpp/etcd_host': value => $etcd_host;
     'ml2_vpp/etcd_port': value => $etcd_port;
     'ml2_vpp/etcd_user': value => $etcd_user;
     'ml2_vpp/etcd_pass': value => $etcd_pass;
-    'DEFAULT/host':      value => $::hostname;
+    'ml2_vpp/vpp_agent_extensions': value => $agent_ext;
+    'DEFAULT/host': value => $::fqdn;
   }
 
   package { 'neutron-vpp-agent':
